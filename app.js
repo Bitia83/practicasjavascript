@@ -1,51 +1,110 @@
 const carrito = document.getElementById('carrito')
 const template = document.getElementById('template')
+const footer = document.getElementById('footer')
+const templateFooter = document.getElementById('templateFooter')
 const fragment = document.createDocumentFragment()
-const btnBotones = document.querySelectorAll('.card .btn')
 
-// console.log(carrito);
-// console.log(template);
-// console.log(fragment);
-// console.log(btnBotones);
-// 
-const carritoObjeto = [];
+document.addEventListener('click', (e) => {
+  //console.log(e.target)
+
+  if (e.target.matches(".card .btn-outline-primary")) {
+    //console.log("ejecutar agregar al carro");
+    agregarCarrito(e);
+  }
+ 
+  if (e.target.matches("#carrito .list-group-item .btn-success")) {
+    aumentarBtn(e)
+  }
+  if (e.target.matches("#carrito .list-group-item .btn-danger")) {
+    disminuirBtn(e)
+  }
+
+});
+
+let carritoObjeto = [];
 
 const agregarCarrito = (e) => {
-  console.log(e.target.dataset.fruta)
+ // console.log(e.target.dataset.fruta)
   const producto = {
     titulo: e.target.dataset.fruta,
     id: e.target.dataset.fruta,
-    cantidad: 1
+    cantidad: 1,
+    precio: e.target.dataset.precio
   };
   const index = carritoObjeto.findIndex(
   (item) => item.id === producto.id
 )
-  console.log(index);
+ // console.log(index);
 
   if (index === -1) {
     carritoObjeto.push(producto);
   } else {
-    carritoObjeto [index].cantidad ++
+    carritoObjeto[index].cantidad++;
+    // carritoObjeto[index].precio = carritoObjeto[index].cantidad * producto.precio
   }
 
-  pintarCarrito(carritoObjeto);
- console.log(carritoObjeto);
+  pintarCarrito();
+ //console.log(carritoObjeto);
 }
 
-const pintarCarrito = (array) => {
+
+
+
+const pintarCarrito = () => {
 
   carrito.textContent = "";
- array.forEach(item => {
-    const clone = template.content.firstElementChild.cloneNode(true)
+ carritoObjeto.forEach(item => {
+    const clone = template.content.cloneNode(true)
     clone.querySelector(".lead").textContent = item.titulo
     clone.querySelector('.badge').textContent = item.cantidad
-
+   clone.querySelector('div .lead span').textContent = item.precio * item.cantidad
+   clone.querySelector('.btn-danger').dataset.id = item.id
+   clone.querySelector('.btn-success').dataset.id = item.id
+   
     fragment.appendChild(clone);
   })
   carrito.appendChild(fragment);
+  pintarFooter();
 };
 
- btnBotones.forEach((btn) => btn.addEventListener("click", agregarCarrito));
+const pintarFooter = () => {
+  console.log("pintar footer");
+  footer.textContent = "";
+
+  const total = carritoObjeto.reduce((acc, current) => acc + current.cantidad * current.precio, 0);
+  
+  console.log(total);  
+  const clone = templateFooter.content.cloneNode(true)
+  clone.querySelector('span').textContent = total
+
+  footer.appendChild(clone);
+}
+
+
+const aumentarBtn = (e) => {
+  //console.log("diste click", e.target.dataset.id);
+  carritoObjeto = carritoObjeto.map(item => {
+    if (item.id === e.target.dataset.id) {
+      item.cantidad ++
+    }
+    return item
+  })
+  pintarCarrito();
+};
+
+const disminuirBtn = (e) => {
+ // console.log("diste click", e.target.dataset.id);
+  carritoObjeto = carritoObjeto.filter(item => {
+    if (item.id === e.target.dataset.id) {
+      if (item.cantidad > 0) {
+        item.cantidad--
+        if (item.cantidad === 0) return
+        return item
+      }
+    } else { return item }
+  })
+  pintarCarrito();
+};
 
 
 
